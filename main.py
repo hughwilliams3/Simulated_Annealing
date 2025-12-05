@@ -2,6 +2,7 @@ import pandas as pd
 import random
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 # We will be doing the rocket ship with 6 experiments
@@ -56,32 +57,64 @@ def markov_chain(x,c,L_k):
 if __name__ == '__main__':
 
     #Dataframe
-    file_path = '/Users/hughwilliams/Documents/Math/Operations_Research/Portfolio_Projects/Simulated_Annealing/rocket_ship.xlsx'
+    file_path = '/Users/Student/Documents/GitHub/Simulated_Annealing/rocket_ship.xlsx'
     df = pd.read_excel(file_path)
 
     # penalty parameter, mu
     mu = 1000
 
     # length of markov chain, L_k
-    L_k = 100
+    L_k = 1000
 
     # initial temp, c0
     c0 = 1000
 
     # temperature decrement, alpha
-    alpha = 0.995
-
-    c = c0
+    alpha = 0.99
 
     # initial soln
-    x_init = [random.randint(0, 1) for _ in range(6)]
+    x_init = [random.randint(0, 1) for _ in range(len(df))]
 
+
+    c = c0
+    obj_data = []
+    weights_data = []
+    values_data = []
     
     while True:
         if c <= c0 / L_k:
             break
         x = markov_chain(x_init,c,L_k)
+        
+        f_x = get_obj_val(x)
+        obj_data.append(f_x)
+        
+        w = sum(df.loc[i, 'Weight']*x[i] for i in range(len(df)))
+        weights_data.append(w)
+        
+        v = sum(df.loc[i, 'Merit']*x[i] for i in range(len(df)))
+        values_data.append(v)
+        
         x_init = x
         c = alpha * c
 
     print(f"We did it! {x_init} is our final answer. Yippee!")
+
+
+    plt.plot(obj_data, '.')
+    plt.title("Penalized Objective Function Evolution")
+    plt.xlabel("Iterations")
+    plt.ylabel("Penalized Objective Value")
+    plt.show()
+    
+    plt.clf()
+    
+    plt.plot(weights_data, 'r.', label = "Weights")
+    plt.plot(values_data, 'g.', label = "Values")
+    plt.title("Weight and Value Evolution")
+    plt.xlabel("Iterations")
+    plt.ylabel("Weight and Value")
+    plt.legend()
+    plt.show()
+    
+    
