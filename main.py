@@ -3,6 +3,7 @@ import random
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+from bnb import *
 
 
 # We will be doing the rocket ship with 6 experiments
@@ -21,7 +22,7 @@ def penalty(x):
     return pen
 
 def get_obj_val(x):
-    obj_val = sum(df.loc[i, 'Merit']*x[i] for i in range(len(df))) - penalty(x)
+    obj_val = sum(df.loc[i, 'Value']*x[i] for i in range(len(df))) - penalty(x)
     return obj_val
 
 # y is the new one (x_j) and x is the old one (x_i), c is temperature
@@ -56,18 +57,21 @@ def markov_chain(x,c,L_k):
 
 if __name__ == '__main__':
 
-    #Dataframe
-    file_path = '/Users/Student/Documents/GitHub/Simulated_Annealing/rocket_ship.xlsx'
-    df = pd.read_excel(file_path)
+    #Dataframe for rocket ship problem
+    #file_path = '/Users/hughwilliams/Documents/Math/Operations_Research/Portfolio_Projects/Simulated_Annealing/rocket_ship.xlsx'
+    #df = pd.read_excel(file_path)
+    #C = 220
+
+    df, C = generate_knapsack_dataset()
 
     # penalty parameter, mu
     mu = 1000
 
     # length of markov chain, L_k
-    L_k = 1000
+    L_k = 100
 
     # initial temp, c0
-    c0 = 1000
+    c0 = C
 
     # temperature decrement, alpha
     alpha = 0.99
@@ -92,15 +96,24 @@ if __name__ == '__main__':
         w = sum(df.loc[i, 'Weight']*x[i] for i in range(len(df)))
         weights_data.append(w)
         
-        v = sum(df.loc[i, 'Merit']*x[i] for i in range(len(df)))
+        v = sum(df.loc[i, 'Value']*x[i] for i in range(len(df)))
         values_data.append(v)
         
         x_init = x
         c = alpha * c
 
-    print(f"We did it! {x_init} is our final answer. Yippee!")
+    
+    gurobi_soln, gurobi_obj_val = run_gurobi(df, C)
+    print("gurobi solution:")
+    print(gurobi_soln)
+    print(f"gurobi objective value: {gurobi_obj_val}")
+    print()
+    print("simulated annealing solution:")
+    print(x_init)
+    print(f"simulated annealing objective value: {get_obj_val(x_init)}")
 
 
+"""
     plt.plot(obj_data, '.')
     plt.title("Penalized Objective Function Evolution")
     plt.xlabel("Iterations")
@@ -115,6 +128,6 @@ if __name__ == '__main__':
     plt.xlabel("Iterations")
     plt.ylabel("Weight and Value")
     plt.legend()
-    plt.show()
+    plt.show()"""
     
     
